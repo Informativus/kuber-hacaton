@@ -82,7 +82,6 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (s, a) => {
         s.status = "idle";
         s.user = a.payload.user;
-
         const { roles } = a.payload.user;
         const username = a.meta.arg.username;
         localStorage.setItem("user", JSON.stringify({ username, roles }));
