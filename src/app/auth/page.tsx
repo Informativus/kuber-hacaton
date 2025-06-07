@@ -38,7 +38,7 @@ export default function Auth() {
 
   useEffect(() => {
     if (status === "idle" && user?.name) {
-      router.push("/dashboard");
+      router.refresh();
     }
   }, [status, user, router]);
 
