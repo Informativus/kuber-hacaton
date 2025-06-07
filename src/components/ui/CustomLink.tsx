@@ -21,8 +21,9 @@ export default function NavLink({
     <Link
       href={href}
       className={`
+        w-full
         ${className}
-        block w-full
+        block
         px-4 py-2
         rounded-md
         text-left

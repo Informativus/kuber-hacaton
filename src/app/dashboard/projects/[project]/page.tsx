@@ -14,6 +14,48 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import Link from "next/link";
+import apiDash from "@/services/apiDash";
+
+interface Cluster {
+  "id": number,
+  "projectId": number,
+  "ip": string,
+  "username": string,
+  "type": string,
+  "createdAt": string,
+  "joinCommand": null,
+  "token": null,
+  "caCertHash": null
+}
+
+async function getClusters (projectId: string) {
+  try{
+    const result = await apiDash.post<Cluster[]>('k8s/project/clusterlist', {
+      projectId
+    })
+    return result.data
+  } catch (e) {
+    console.log(e)
+    return [
+      {
+        id: 1,
+        projectId: projectId,
+        ip: 'ip 13213123',
+        username: 'username',
+        type: 'type1',
+        createdAt: 'time'
+      },
+      {
+        id: 2,
+        projectId: projectId,
+        ip: 'ip 4384234820349',
+        username: 'username 2',
+        type: 'type2',
+        createdAt: 'time'
+      }
+    ]
+  }
+}
 
 export default async function TablePage({
   params,
@@ -21,16 +63,12 @@ export default async function TablePage({
   params: Promise<{ project: string }>;
 }) {
   const { project } = await params;
-  const data = [
-    { id: "1", name: "test1", status: "status test1" },
-    { id: "2", name: "test2", status: "status test2" },
-    { id: "3", name: "test3", status: "status test3" },
-  ];
+  const data = await getClusters(project)
 
   return (
     <div className="p-6 bg-gray-50 rounded-lg shadow-lg">
       <h2 className="mb-6 text-2xl font-semibold text-gray-800">
-        Проекты: {project}
+        Проекты {project}
       </h2>
 
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
@@ -38,10 +76,13 @@ export default async function TablePage({
           <TableHeader className="bg-gray-100">
             <TableRow>
               <TableHead className="px-5 py-3 text-left font-medium uppercase tracking-wide">
-                Name
+                Ip
               </TableHead>
               <TableHead className="px-5 py-3 text-left font-medium uppercase tracking-wide">
-                Status
+                Имя пользвателя
+              </TableHead>
+              <TableHead className="px-5 py-3 text-left font-medium uppercase tracking-wide">
+                Тип
               </TableHead>
               <TableHead className="px-5 py-3" />
             </TableRow>
@@ -56,13 +97,13 @@ export default async function TablePage({
                 <TableCell className="px-5 py-3">
                   <Sheet>
                     <SheetTrigger className="text-gray-800 hover:text-gray-600 cursor-pointer underline">
-                      {item.name}
+                      {item.ip}
                     </SheetTrigger>
 
                     <SheetContent className="w-full max-w-md bg-white rounded-lg shadow-lg p-5">
                       <SheetHeader className="border-b border-gray-200 mb-4 pb-2">
                         <SheetTitle className="text-lg font-semibold text-gray-900">
-                          Details for {item.name}
+                          Details for {item.id}
                         </SheetTitle>
                       </SheetHeader>
 
@@ -97,10 +138,11 @@ export default async function TablePage({
                   </Sheet>
                 </TableCell>
 
-                <TableCell className="px-5 py-3">{item.status}</TableCell>
+                <TableCell className="px-5 py-3">{item.username}</TableCell>
+                <TableCell className="px-5 py-3">{item.type}</TableCell>
 
                 <TableCell className="px-5 py-3">
-                  <Link href="/" className="text-gray-800 hover:underline">
+                  <Link href={`/dashboard/projects/${project}/${item.id}`} className="text-gray-800 hover:underline">
                     Изменить
                   </Link>
                 </TableCell>
