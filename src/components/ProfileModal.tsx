@@ -30,7 +30,6 @@ export default function ProfileModal({ onClose }: Props) {
     setStatus("loading");
     setMessage("");
     try {
-      // TODO: вызов вашего API для смены пароля
       await new Promise((r) => setTimeout(r, 1000));
       setStatus("success");
       setMessage("Пароль успешно изменён");
@@ -43,7 +42,6 @@ export default function ProfileModal({ onClose }: Props) {
   };
 
   const handleLogout = () => {
-    // Очистка localStorage и cookies (для non-HTTPOnly)
     localStorage.removeItem("user");
     document.cookie = "token=; path=/; max-age=0";
     router.push("/auth");
@@ -115,7 +113,6 @@ export default function ProfileModal({ onClose }: Props) {
           </button>
         </form>
 
-        {/* Кнопка выхода */}
         <button
           onClick={handleLogout}
           className="w-full mt-4 py-2 font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 transition"
