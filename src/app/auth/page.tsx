@@ -103,7 +103,11 @@ export default function Auth() {
             required
             className={`cursor-text ${showPasswordTooShort ? "border-red-500" : ""}`}
           />
-          {showPasswordTooShort && <p className="text-red-600 text-sm">...</p>}
+          {showPasswordTooShort && (
+            <p className="text-red-600 text-sm">
+              Пароль должен быть не менее 4 символов
+            </p>
+          )}
         </div>
 
         {/* Подтверждение пароля */}

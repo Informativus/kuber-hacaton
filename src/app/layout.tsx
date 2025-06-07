@@ -10,7 +10,6 @@ export default async function RootLayout({
 }) {
   const hdrs = await headers();
   const pathname = hdrs.get("x-pathname") || "";
-  console.log(pathname);
 
   const hideNavbarRoutes = ["/auth"];
   const shouldHideNavbar = hideNavbarRoutes.includes(pathname);

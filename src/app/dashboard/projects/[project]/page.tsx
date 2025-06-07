@@ -17,43 +17,42 @@ import Link from "next/link";
 import apiDash from "@/services/apiDash";
 
 interface Cluster {
-  "id": number,
-  "projectId": number,
-  "ip": string,
-  "username": string,
-  "type": string,
-  "createdAt": string,
-  "joinCommand": null,
-  "token": null,
-  "caCertHash": null
+  id: number;
+  projectId: number;
+  ip: string;
+  username: string;
+  type: string;
+  createdAt: string;
+  joinCommand: null;
+  token: null;
+  caCertHash: null;
 }
 
-async function getClusters (projectId: string) {
-  try{
-    const result = await apiDash.post<Cluster[]>('k8s/project/clusterlist', {
-      projectId
-    })
-    return result.data
+async function getClusters(projectId: string) {
+  try {
+    const result = await apiDash.post<Cluster[]>("k8s/project/clusterlist", {
+      projectId,
+    });
+    return result.data;
   } catch (e) {
-    console.log(e)
     return [
       {
         id: 1,
         projectId: projectId,
-        ip: 'ip 13213123',
-        username: 'username',
-        type: 'type1',
-        createdAt: 'time'
+        ip: "ip 13213123",
+        username: "username",
+        type: "type1",
+        createdAt: "time",
       },
       {
         id: 2,
         projectId: projectId,
-        ip: 'ip 4384234820349',
-        username: 'username 2',
-        type: 'type2',
-        createdAt: 'time'
-      }
-    ]
+        ip: "ip 4384234820349",
+        username: "username 2",
+        type: "type2",
+        createdAt: "time",
+      },
+    ];
   }
 }
 
@@ -63,7 +62,7 @@ export default async function TablePage({
   params: Promise<{ project: string }>;
 }) {
   const { project } = await params;
-  const data = await getClusters(project)
+  const data = await getClusters(project);
 
   return (
     <div className="p-6 bg-gray-50 rounded-lg shadow-lg">
@@ -142,7 +141,10 @@ export default async function TablePage({
                 <TableCell className="px-5 py-3">{item.type}</TableCell>
 
                 <TableCell className="px-5 py-3">
-                  <Link href={`/dashboard/projects/${project}/${item.id}`} className="text-gray-800 hover:underline">
+                  <Link
+                    href={`/dashboard/projects/${project}/${item.id}`}
+                    className="text-gray-800 hover:underline"
+                  >
                     Изменить
                   </Link>
                 </TableCell>

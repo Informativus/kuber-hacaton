@@ -26,7 +26,12 @@ export const loginUser = createAsyncThunk<
   try {
     return await loginApi(name, password);
   } catch (err: any) {
-    return rejectWithValue(err.message);
+    const message =
+      typeof err?.response?.data?.message === "string"
+        ? err.response.data.message
+        : err.message;
+
+    return rejectWithValue(message);
   }
 });
 
@@ -40,7 +45,9 @@ export const registerUser = createAsyncThunk<
     try {
       return await registerApi(name, password, confirm, clusterCode);
     } catch (err: any) {
-      return rejectWithValue(err.message);
+      const message =
+        err?.response?.data?.message || err.message || "Register error";
+      return rejectWithValue(message);
     }
   },
 );

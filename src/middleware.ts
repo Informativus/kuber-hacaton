@@ -5,8 +5,6 @@ const publicPaths = ["/auth"];
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
-  console.log(request.cookies.get("token"));
-  console.log(request.cookies);
 
   const { pathname } = request.nextUrl;
 

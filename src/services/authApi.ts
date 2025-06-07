@@ -36,7 +36,6 @@ export async function loginApi(
     name,
     password,
   });
-  console.log(result.data);
 
   return {
     user: {
@@ -58,7 +57,6 @@ export async function registerApi(
     name,
     password,
   });
-  console.log(result.data);
 
   return {
     user: {

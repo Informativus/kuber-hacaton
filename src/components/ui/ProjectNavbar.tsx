@@ -6,62 +6,55 @@ import NavLink from "./NavLink";
 import apiDash from "@/services/apiDash";
 
 interface Project {
-  "id": number,
-  "name": string,
-  "createdAt": string
+  id: number;
+  name: string;
+  createdAt: string;
 }
 
 interface Projects {
-  "id": number,
-  "userId": number,
-  "projectId": number,
-  "createdAt": string,
-  "project": Project
+  id: number;
+  userId: number;
+  projectId: number;
+  createdAt: string;
+  project: Project;
 }
 
 interface ProjectProps {
-  "collection": {
-        "id": number,
-        "userId": string,
-        "username": string,
-        "createdAt": string,
-        "projects": Projects[]
-    },
-    "code": number
+  collection: {
+    id: number;
+    userId: string;
+    username: string;
+    createdAt: string;
+    projects: Projects[];
+  };
+  code: number;
 }
 
-async function getProjects (userId: string) {
-
-  try{
-    const result = await apiDash.post<ProjectProps>('k8s/project/list', {
-      userId
-    })
-    console.log(result)
-    return result.data.collection.projects.map(project => {
-      return {id: project.project.id, name: project.project.name}
-    })
-
+async function getProjects(userId: string) {
+  try {
+    const result = await apiDash.post<ProjectProps>("k8s/project/list", {
+      userId,
+    });
+    return result.data.collection.projects.map((project) => {
+      return { id: project.project.id, name: project.project.name };
+    });
   } catch (e) {
-    console.log(e)
-    return []
+    return [];
   }
 }
 
 export default function ProjectNavbar() {
+  const [projects, setProjects] = useState<{ name: string; id: number }[]>([]);
 
-  const [projects, setProjects] = useState<{name: string, id: number}[]>([])
-
-  const userId = '123'
+  const userId = "123";
 
   useEffect(() => {
     async function wrapper() {
-      const serverProject = await getProjects(userId)
-      setProjects(serverProject)
+      const serverProject = await getProjects(userId);
+      setProjects(serverProject);
     }
-    wrapper()
-  }, [])
-
-
+    wrapper();
+  }, []);
 
   return (
     <aside className="w-60 h-full bg-gray-100 border-r border-gray-200 p-4">
