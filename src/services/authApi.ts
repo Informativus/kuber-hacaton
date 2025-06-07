@@ -1,6 +1,7 @@
 export interface Role {
   id: string;
   name: string;
+  action: string;
 }
 
 export interface UserInterface {
@@ -28,7 +29,7 @@ export function loginApi(
         resolve({
           user: {
             username,
-            roles: [{ id: "r-2", name: "user" }],
+            roles: [{ id: "r-2", name: "user", action: "read" }],
           },
         }),
       500,
@@ -49,7 +50,7 @@ export function registerApi(
         resolve({
           user: {
             username,
-            roles: [{ id: "r-2", name: "user" }],
+            roles: [{ id: "r-2", name: "user", action: "read" }],
           },
         }),
       700,
