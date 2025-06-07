@@ -11,6 +11,9 @@ export function middleware(request: NextRequest) {
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
 
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", pathname);
+
   if (!token && !isPublic) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth";
@@ -23,8 +26,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(dashboardUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
+
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|auth).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

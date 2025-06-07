@@ -40,8 +40,6 @@ export default function Auth() {
 
   useEffect(() => {
     if (status === "idle" && user?.name) {
-      console.log(localStorage.getItem("user"));
-
       router.push("/dashboard");
     }
   }, [status, user, router]);
