@@ -31,6 +31,11 @@ export async function loginApi(
   name: string,
   password: string,
 ): Promise<LoginResponse> {
+  console.log({
+    name,
+    password,
+  });
+
   const result = await api.post<ServerLoginResponse>("auth/login", {
     name,
     password,
@@ -52,18 +57,18 @@ export async function loginApi(
 }
 
 export async function registerApi(
-  username: string,
+  name: string,
   password: string,
   confirm: string,
   clusterCode?: string,
 ): Promise<LoginResponse> {
-  console.log("[MOCK register]", { username, password, confirm, clusterCode });
+  console.log("[MOCK register]", { name, password, confirm, clusterCode });
   return new Promise((resolve) =>
     setTimeout(
       () =>
         resolve({
           user: {
-            username,
+            name,
             roles: [{ id: "r-2", name: "user", action: "read" }],
           },
         }),
