@@ -11,15 +11,10 @@ import { loginUser, registerUser } from "@/store/authSlice";
 export default function Auth() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const {
-    status,
-    error: reduxError,
-    accessToken,
-    uids,
-  } = useAppSelector((s) => s.auth);
+  const { status, error: reduxError, user } = useAppSelector((s) => s.auth);
 
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [clusterCode, setCluster] = useState("");
@@ -30,11 +25,11 @@ export default function Auth() {
       return;
     }
     if (isLogin) {
-      dispatch(loginUser({ email, password }));
+      dispatch(loginUser({ username, password }));
     } else {
       dispatch(
         registerUser({
-          email,
+          username,
           password,
           confirm,
           clusterCode: clusterCode || undefined,
@@ -44,14 +39,10 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    if (status === "idle" && accessToken) {
-      if (uids && uids.length > 0) {
-        localStorage.setItem("uids", JSON.stringify(uids));
-      }
-
+    if (status === "idle" && user?.username) {
       router.push("/dashboard");
     }
-  }, [status, accessToken, uids, router]);
+  }, [status, user, router]);
 
   const showPasswordMismatch =
     !isLogin && confirm.length > 0 && password !== confirm;
@@ -91,13 +82,13 @@ export default function Auth() {
         )}
 
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="username">Имя пользователя</Label>
           <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="username"
             required
           />
         </div>

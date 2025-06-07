@@ -1,29 +1,30 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { loginApi, registerApi, LoginResponse } from "@/services/authApi";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  loginApi,
+  registerApi,
+  LoginResponse,
+  UserInterface,
+} from "@/services/authApi";
 
 interface AuthState {
-  accessToken: string | null;
-  user: LoginResponse["user"] | null;
-  uids: string[];
+  user: UserInterface | null;
   status: "idle" | "loading" | "failed";
   error: string | null;
 }
 
 const initialState: AuthState = {
-  accessToken: null,
   user: null,
-  uids: [],
   status: "idle",
   error: null,
 };
 
 export const loginUser = createAsyncThunk<
   LoginResponse,
-  { email: string; password: string },
+  { username: string; password: string },
   { rejectValue: string }
->("auth/login", async ({ email, password }, { rejectWithValue }) => {
+>("auth/login", async ({ username, password }, { rejectWithValue }) => {
   try {
-    return await loginApi(email, password);
+    return await loginApi(username, password);
   } catch (err: any) {
     return rejectWithValue(err.message);
   }
@@ -31,13 +32,13 @@ export const loginUser = createAsyncThunk<
 
 export const registerUser = createAsyncThunk<
   LoginResponse,
-  { email: string; password: string; confirm: string; clusterCode?: string },
+  { username: string; password: string; confirm: string; clusterCode?: string },
   { rejectValue: string }
 >(
   "auth/register",
-  async ({ email, password, confirm, clusterCode }, { rejectWithValue }) => {
+  async ({ username, password, confirm, clusterCode }, { rejectWithValue }) => {
     try {
-      return await registerApi(email, password, confirm, clusterCode);
+      return await registerApi(username, password, confirm, clusterCode);
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
@@ -49,17 +50,10 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout(state) {
-      state.accessToken = null;
       state.user = null;
-      state.uids = [];
       state.status = "idle";
       state.error = null;
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("uids");
-    },
-    clearUids(state) {
-      state.uids = [];
-      localStorage.removeItem("uids");
+      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
@@ -68,11 +62,13 @@ const authSlice = createSlice({
         s.status = "loading";
         s.error = null;
       })
-      .addCase(loginUser.fulfilled, (s, a: PayloadAction<LoginResponse>) => {
+      .addCase(loginUser.fulfilled, (s, a) => {
         s.status = "idle";
-        s.accessToken = a.payload.accessToken;
         s.user = a.payload.user;
-        s.uids = a.payload.uids;
+
+        const { roles } = a.payload.user;
+        const username = a.meta.arg.username;
+        localStorage.setItem("user", JSON.stringify({ username, roles }));
       })
       .addCase(loginUser.rejected, (s, a) => {
         s.status = "failed";
@@ -83,10 +79,13 @@ const authSlice = createSlice({
         s.status = "loading";
         s.error = null;
       })
-      .addCase(registerUser.fulfilled, (s, a: PayloadAction<LoginResponse>) => {
+      .addCase(registerUser.fulfilled, (s, a) => {
         s.status = "idle";
-        s.accessToken = a.payload.accessToken;
         s.user = a.payload.user;
+
+        const { roles } = a.payload.user;
+        const username = a.meta.arg.username;
+        localStorage.setItem("user", JSON.stringify({ username, roles }));
       })
       .addCase(registerUser.rejected, (s, a) => {
         s.status = "failed";
@@ -95,5 +94,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearUids } = authSlice.actions;
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;
