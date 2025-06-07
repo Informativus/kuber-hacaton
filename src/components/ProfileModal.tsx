@@ -44,6 +44,7 @@ export default function ProfileModal({ onClose }: Props) {
   const handleLogout = () => {
     localStorage.removeItem("user");
     document.cookie = "token=; path=/; max-age=0";
+    console.log("logout");
     router.push("/auth");
     onClose();
   };
