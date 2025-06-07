@@ -1,3 +1,5 @@
+import api from "./api";
+
 export interface Role {
   id: string;
   name: string;
@@ -13,16 +15,28 @@ export interface LoginResponse {
   user: UserInterface;
 }
 
+interface ServerLoginResponse {
+  id: number;
+  name: string;
+  roles: Role[];
+  createdAt: string;
+}
+
 export interface LoginRequest {
   username: string;
   password: string;
 }
 
-export function loginApi(
+export async function loginApi(
   name: string,
   password: string,
 ): Promise<LoginResponse> {
-  console.log("[MOCK login] ", { name, password });
+  const result = await api.post<ServerLoginResponse>("auth/login", {
+    name,
+    password,
+  });
+  console.log(result);
+
   return new Promise((resolve) =>
     setTimeout(
       () =>
@@ -37,7 +51,7 @@ export function loginApi(
   );
 }
 
-export function registerApi(
+export async function registerApi(
   username: string,
   password: string,
   confirm: string,
