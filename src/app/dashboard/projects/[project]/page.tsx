@@ -28,12 +28,19 @@ interface Cluster {
   caCertHash: null;
 }
 
-async function getClusters(projectId: string) {
+interface CLusterProps {
+  collection: Cluster[]
+  code: number
+}
+
+async function getClusters(projectIdString: string) {
+  const projectId = Number(projectIdString)
   try {
-    const result = await apiDash.post<Cluster[]>("k8s/project/clusterlist", {
+    const result = await apiDash.post<CLusterProps>("k8s/project/clusterlist", {
       projectId,
     });
-    return result.data;
+    console.log(result.data.collection)
+    return result.data.collection;
   } catch (e) {
     return [
       {
