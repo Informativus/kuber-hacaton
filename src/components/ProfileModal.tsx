@@ -3,6 +3,7 @@
 import { UserInterface } from "@/services/authApi";
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import api from "@/services/api";
 
 interface Props {
   onClose: () => void;
@@ -16,13 +17,15 @@ export default function ProfileModal({ onClose }: Props) {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [message, setMessage] = useState<string>("");
+  const [logoutLoading, setLogoutLoading] = useState<boolean>(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const user = JSON.parse(
-      localStorage.getItem("user") || "{}",
-    ) as UserInterface;
-    if (user?.name) setUsername(user.name);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if ((user as UserInterface)?.name) {
+      setUsername((user as UserInterface).name);
+    }
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -41,12 +44,20 @@ export default function ProfileModal({ onClose }: Props) {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    document.cookie = "token=; path=/; max-age=0";
-    console.log("logout");
-    router.push("/auth");
-    onClose();
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    setLogoutError(null);
+    try {
+      await api.post("/auth/logout");
+      localStorage.removeItem("user");
+      onClose();
+      router.replace("/auth");
+    } catch (err) {
+      console.error(err);
+      setLogoutError("Не удалось выйти, попробуйте ещё раз");
+    } finally {
+      setLogoutLoading(false);
+    }
   };
 
   return (
@@ -74,11 +85,14 @@ export default function ProfileModal({ onClose }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="old" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="oldPassword"
+              className="block text-sm font-medium mb-1"
+            >
               Старый пароль
             </label>
             <input
-              id="old"
+              id="oldPassword"
               type="password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -88,11 +102,14 @@ export default function ProfileModal({ onClose }: Props) {
           </div>
 
           <div>
-            <label htmlFor="new" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="newPassword"
+              className="block text-sm font-medium mb-1"
+            >
               Новый пароль
             </label>
             <input
-              id="new"
+              id="newPassword"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -116,10 +133,18 @@ export default function ProfileModal({ onClose }: Props) {
 
         <button
           onClick={handleLogout}
-          className="w-full mt-4 py-2 font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 transition"
+          disabled={logoutLoading}
+          className={`w-full mt-4 py-2 font-medium rounded-xl transition ${
+            logoutLoading
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : "bg-red-600 text-white hover:bg-red-700"
+          }`}
         >
-          Выйти
+          {logoutLoading ? "Выходим…" : "Выйти"}
         </button>
+        {logoutError && (
+          <p className="mt-2 text-center text-red-600">{logoutError}</p>
+        )}
 
         {status === "success" && (
           <p className="mt-4 text-green-600 text-center">{message}</p>
