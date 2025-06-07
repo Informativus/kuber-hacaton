@@ -21,7 +21,7 @@ export const loginUser = createAsyncThunk<
   LoginResponse,
   { email: string; password: string },
   { rejectValue: string }
->("auth/loginUser", async ({ email, password }, { rejectWithValue }) => {
+>("auth/login", async ({ email, password }, { rejectWithValue }) => {
   try {
     return await loginApi(email, password);
   } catch (err: any) {
@@ -34,14 +34,14 @@ export const registerUser = createAsyncThunk<
   { email: string; password: string; confirm: string; clusterCode?: string },
   { rejectValue: string }
 >(
-  "auth/registerUser",
+  "auth/register",
   async ({ email, password, confirm, clusterCode }, { rejectWithValue }) => {
     try {
       return await registerApi(email, password, confirm, clusterCode);
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
@@ -87,9 +87,6 @@ const authSlice = createSlice({
         s.status = "idle";
         s.accessToken = a.payload.accessToken;
         s.user = a.payload.user;
-        if (!s.uids.includes(a.payload.uid)) {
-          s.uids.push(a.payload.uid);
-        }
       })
       .addCase(registerUser.rejected, (s, a) => {
         s.status = "failed";

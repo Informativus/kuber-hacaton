@@ -38,18 +38,17 @@ export default function Auth() {
           password,
           confirm,
           clusterCode: clusterCode || undefined,
-        })
+        }),
       );
     }
   };
 
   useEffect(() => {
     if (status === "idle" && accessToken) {
-      localStorage.setItem("accessToken", accessToken);
       if (uids && uids.length > 0) {
         localStorage.setItem("uids", JSON.stringify(uids));
       }
-      
+
       router.push("/dashboard");
     }
   }, [status, accessToken, uids, router]);
@@ -156,8 +155,8 @@ export default function Auth() {
           {status === "loading"
             ? "Загрузка..."
             : isLogin
-            ? "Войти"
-            : "Зарегистрироваться"}
+              ? "Войти"
+              : "Зарегистрироваться"}
         </Button>
       </form>
     </div>
