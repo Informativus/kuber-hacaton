@@ -3,12 +3,13 @@ import api from "./api";
 export interface Role {
   id: string;
   name: string;
-  action: string;
 }
 
 export interface UserInterface {
+  id: number;
   name: string;
   roles: Role[];
+  createdAt: string;
 }
 
 export interface LoginResponse {
@@ -35,19 +36,16 @@ export async function loginApi(
     name,
     password,
   });
+  console.log(result.data);
 
-  return new Promise((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          user: {
-            name,
-            roles: [{ id: "r-2", name: "user", action: "read" }],
-          },
-        }),
-      500,
-    ),
-  );
+  return {
+    user: {
+      id: result.data.id,
+      name: result.data.name,
+      roles: [{ id: "r-2", name: "user" }],
+      createdAt: result.data.createdAt,
+    },
+  };
 }
 
 export async function registerApi(
@@ -56,16 +54,18 @@ export async function registerApi(
   confirm: string,
   clusterCode?: string,
 ): Promise<LoginResponse> {
-  return new Promise((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          user: {
-            name,
-            roles: [{ id: "r-2", name: "user", action: "read" }],
-          },
-        }),
-      700,
-    ),
-  );
+  const result = await api.post<ServerLoginResponse>("auth/register", {
+    name,
+    password,
+  });
+  console.log(result.data);
+
+  return {
+    user: {
+      id: result.data.id,
+      name: result.data.name,
+      roles: [{ id: "r-2", name: "user" }],
+      createdAt: result.data.createdAt,
+    },
+  };
 }

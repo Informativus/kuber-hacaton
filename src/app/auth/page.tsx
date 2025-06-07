@@ -21,9 +21,7 @@ export default function Auth() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isLogin && password !== confirm) {
-      return;
-    }
+    if (!isLogin && password !== confirm) return;
     if (isLogin) {
       dispatch(loginUser({ name, password }));
     } else {
@@ -51,12 +49,12 @@ export default function Auth() {
     status === "loading" || showPasswordMismatch || showPasswordTooShort;
 
   return (
-    <div className="max-w-md mx-auto py-12">
+    <div className="max-w-lg w-full mx-auto py-12 px-4">
       <div className="flex justify-center mb-6 space-x-4">
         <button
           type="button"
           className={`px-4 py-2 font-semibold ${
-            isLogin ? "border-b-2" : "text-gray-500"
+            isLogin ? "border-b-2 border-gray-900" : "text-gray-500"
           }`}
           onClick={() => setIsLogin(true)}
         >
@@ -65,7 +63,7 @@ export default function Auth() {
         <button
           type="button"
           className={`px-4 py-2 font-semibold ${
-            !isLogin ? "border-b-2" : "text-gray-500"
+            !isLogin ? "border-b-2 border-gray-900" : "text-gray-500"
           }`}
           onClick={() => setIsLogin(false)}
         >
@@ -75,13 +73,13 @@ export default function Auth() {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 bg-white dark:bg-card p-6 rounded-xl shadow"
+        className="space-y-6 bg-white p-8 rounded-2xl shadow-lg"
       >
         {status === "failed" && reduxError && (
           <div className="text-red-600 text-sm">{reduxError}</div>
         )}
 
-        <div>
+        <div className="flex flex-col gap-2 cursor-default">
           <Label htmlFor="name">Имя пользователя</Label>
           <Input
             id="name"
@@ -90,10 +88,11 @@ export default function Auth() {
             onChange={(e) => setName(e.target.value)}
             placeholder="username"
             required
+            className="cursor-text"
           />
         </div>
 
-        <div>
+        <div className="flex flex-col gap-2 cursor-default">
           <Label htmlFor="password">Пароль</Label>
           <Input
             id="password"
@@ -102,47 +101,49 @@ export default function Auth() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             required
-            className={showPasswordTooShort ? "border-red-500" : ""}
+            className={`cursor-text ${showPasswordTooShort ? "border-red-500" : ""}`}
           />
-          {showPasswordTooShort && (
-            <p className="mt-1 text-red-600 text-sm">
-              Пароль должен быть минимум 4 символа
-            </p>
-          )}
+          {showPasswordTooShort && <p className="text-red-600 text-sm">...</p>}
         </div>
 
+        {/* Подтверждение пароля */}
         {!isLogin && (
-          <>
-            <div>
-              <Label htmlFor="confirm">Повторите пароль</Label>
-              <Input
-                id="confirm"
-                type="password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                placeholder="••••••••"
-                required
-                className={showPasswordMismatch ? "border-red-500" : ""}
-              />
-              {showPasswordMismatch && (
-                <p className="mt-1 text-red-600 text-sm">Пароли не совпадают</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="cluster">Код кластера (опционально)</Label>
-              <Input
-                id="cluster"
-                type="text"
-                value={clusterCode}
-                onChange={(e) => setCluster(e.target.value)}
-                placeholder="код кластера"
-              />
-            </div>
-          </>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="confirm">Повторите пароль</Label>
+            <Input
+              id="confirm"
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="••••••••"
+              required
+              className={showPasswordMismatch ? "border-red-500" : ""}
+            />
+            {showPasswordMismatch && (
+              <p className="text-red-600 text-sm">Пароли не совпадают</p>
+            )}
+          </div>
         )}
 
-        <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
+        {/* Код кластера */}
+        {!isLogin && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="cluster">Код кластера (опционально)</Label>
+            <Input
+              id="cluster"
+              type="text"
+              value={clusterCode}
+              onChange={(e) => setCluster(e.target.value)}
+              placeholder="код кластера"
+            />
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          className="w-full py-3 text-lg font-medium"
+          disabled={isSubmitDisabled}
+        >
           {status === "loading"
             ? "Загрузка..."
             : isLogin

@@ -4,7 +4,10 @@ import type { NextRequest } from "next/server";
 const publicPaths = ["/auth"];
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("accessToken")?.value;
+  const token = request.cookies.get("token")?.value;
+  console.log(request.cookies.get("token"));
+  console.log(request.cookies);
+
   const { pathname } = request.nextUrl;
 
   const isPublic = publicPaths.some(

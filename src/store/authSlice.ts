@@ -66,9 +66,9 @@ const authSlice = createSlice({
         s.status = "idle";
         s.user = a.payload.user;
 
-        const { roles } = a.payload.user;
+        const { roles, id } = a.payload.user;
         const name = a.meta.arg.name;
-        localStorage.setItem("user", JSON.stringify({ name, roles }));
+        localStorage.setItem("user", JSON.stringify({ name, roles, id }));
       })
       .addCase(loginUser.rejected, (s, a) => {
         s.status = "failed";
@@ -82,9 +82,9 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (s, a) => {
         s.status = "idle";
         s.user = a.payload.user;
-        const { roles } = a.payload.user;
+        const { roles, id } = a.payload.user;
         const name = a.meta.arg.name;
-        localStorage.setItem("user", JSON.stringify({ name, roles }));
+        localStorage.setItem("user", JSON.stringify({ name, roles, id }));
       })
       .addCase(registerUser.rejected, (s, a) => {
         s.status = "failed";
