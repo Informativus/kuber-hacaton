@@ -1,10 +1,11 @@
-import React from 'react'
+import React from "react";
 
-export default async function Project({params}: {params: {project: string}}) {
+export default async function Project({
+  params,
+}: {
+  params: Promise<{ project: string }>;
+}) {
+  const { project } = await params;
 
-  const { project } = await params
-
-  return (
-    <div>{project}</div>
-  )
+  return <div>{project}</div>;
 }

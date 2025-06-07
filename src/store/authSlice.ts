@@ -41,7 +41,7 @@ export const registerUser = createAsyncThunk<
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
@@ -87,9 +87,6 @@ const authSlice = createSlice({
         s.status = "idle";
         s.accessToken = a.payload.accessToken;
         s.user = a.payload.user;
-        if (!s.uids.includes(a.payload.uid)) {
-          s.uids.push(a.payload.uid);
-        }
       })
       .addCase(registerUser.rejected, (s, a) => {
         s.status = "failed";
