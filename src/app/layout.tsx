@@ -1,4 +1,5 @@
 import "./globals.css";
+import TopNavbar from "@/components/ui/TopNavbar";
 import { Providers } from "./providers";
 
 export default function RootLayout({
@@ -9,7 +10,10 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className="bg-background text-foreground antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <TopNavbar />
+          {children}
+        </Providers>
       </body>
     </html>
   );
