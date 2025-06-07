@@ -22,10 +22,9 @@ export default function NavLink({
       href={href}
       className={`
         ${className}
-        block w-full
+        block
         px-4 py-2
         rounded-md
-        text-left
         font-medium
         transition-colors duration-150
         ${
