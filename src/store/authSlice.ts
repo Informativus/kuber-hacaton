@@ -20,11 +20,11 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk<
   LoginResponse,
-  { username: string; password: string },
+  { name: string; password: string },
   { rejectValue: string }
->("auth/login", async ({ username, password }, { rejectWithValue }) => {
+>("auth/login", async ({ name, password }, { rejectWithValue }) => {
   try {
-    return await loginApi(username, password);
+    return await loginApi(name, password);
   } catch (err: any) {
     return rejectWithValue(err.message);
   }
@@ -32,13 +32,13 @@ export const loginUser = createAsyncThunk<
 
 export const registerUser = createAsyncThunk<
   LoginResponse,
-  { username: string; password: string; confirm: string; clusterCode?: string },
+  { name: string; password: string; confirm: string; clusterCode?: string },
   { rejectValue: string }
 >(
   "auth/register",
-  async ({ username, password, confirm, clusterCode }, { rejectWithValue }) => {
+  async ({ name, password, confirm, clusterCode }, { rejectWithValue }) => {
     try {
-      return await registerApi(username, password, confirm, clusterCode);
+      return await registerApi(name, password, confirm, clusterCode);
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
@@ -67,8 +67,8 @@ const authSlice = createSlice({
         s.user = a.payload.user;
 
         const { roles } = a.payload.user;
-        const username = a.meta.arg.username;
-        localStorage.setItem("user", JSON.stringify({ username, roles }));
+        const name = a.meta.arg.name;
+        localStorage.setItem("user", JSON.stringify({ name, roles }));
       })
       .addCase(loginUser.rejected, (s, a) => {
         s.status = "failed";
@@ -83,8 +83,8 @@ const authSlice = createSlice({
         s.status = "idle";
         s.user = a.payload.user;
         const { roles } = a.payload.user;
-        const username = a.meta.arg.username;
-        localStorage.setItem("user", JSON.stringify({ username, roles }));
+        const name = a.meta.arg.name;
+        localStorage.setItem("user", JSON.stringify({ name, roles }));
       })
       .addCase(registerUser.rejected, (s, a) => {
         s.status = "failed";

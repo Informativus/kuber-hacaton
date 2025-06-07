@@ -5,7 +5,7 @@ export interface Role {
 }
 
 export interface UserInterface {
-  username: string;
+  name: string;
   roles: Role[];
 }
 
@@ -19,16 +19,16 @@ export interface LoginRequest {
 }
 
 export function loginApi(
-  username: string,
+  name: string,
   password: string,
 ): Promise<LoginResponse> {
-  console.log("[MOCK login] ", { username, password });
+  console.log("[MOCK login] ", { name, password });
   return new Promise((resolve) =>
     setTimeout(
       () =>
         resolve({
           user: {
-            username,
+            name,
             roles: [{ id: "r-2", name: "user", action: "read" }],
           },
         }),

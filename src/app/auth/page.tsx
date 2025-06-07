@@ -14,7 +14,7 @@ export default function Auth() {
   const { status, error: reduxError, user } = useAppSelector((s) => s.auth);
 
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [clusterCode, setCluster] = useState("");
@@ -25,11 +25,11 @@ export default function Auth() {
       return;
     }
     if (isLogin) {
-      dispatch(loginUser({ username, password }));
+      dispatch(loginUser({ name, password }));
     } else {
       dispatch(
         registerUser({
-          username,
+          name,
           password,
           confirm,
           clusterCode: clusterCode || undefined,
@@ -39,7 +39,9 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    if (status === "idle" && user?.username) {
+    if (status === "idle" && user?.name) {
+      console.log(localStorage.getItem("user"));
+
       router.push("/dashboard");
     }
   }, [status, user, router]);
@@ -82,12 +84,12 @@ export default function Auth() {
         )}
 
         <div>
-          <Label htmlFor="username">Имя пользователя</Label>
+          <Label htmlFor="name">Имя пользователя</Label>
           <Input
-            id="username"
+            id="name"
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="username"
             required
           />
