@@ -51,7 +51,7 @@ export default function ProfileModal({ onClose }: Props) {
       await api.post("/auth/logout");
       localStorage.removeItem("user");
       onClose();
-      router.replace("/auth");
+      router.push("/auth");
     } catch (err) {
       console.error(err);
       setLogoutError("Не удалось выйти, попробуйте ещё раз");
