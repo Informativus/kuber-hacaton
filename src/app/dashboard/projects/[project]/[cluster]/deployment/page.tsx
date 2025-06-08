@@ -146,7 +146,7 @@ async function deployCluster(clusterIdString: string, namespace :string, name:st
 
 
 
-function ModalDeploymentMetrics({ namespace, podmane, clusterId, replicas} : {namespace: string, podmane: string, clusterId: string, replicas: number}){
+function ModalDeploymentMetrics({ namespace, podmane, clusterId} : {namespace: string, podmane: string, clusterId: string, replicas: number}){
   const [metrics, setMetrics] = useState<DeploymentMetrics>()
   const [input, setInput] = useState('')
   useEffect(() => {
@@ -167,6 +167,7 @@ function ModalDeploymentMetrics({ namespace, podmane, clusterId, replicas} : {na
     if (value < 0) setInput(inputValue)
     if (value > 4) setInput(inputValue)
   }
+  const replicas = Number(input)
   return (
     <div className="flex flex-col gap-5">
       <Input value={input} type="number" onChange={(e) => handleInput(e.target.value)}/>
