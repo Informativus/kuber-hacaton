@@ -19,6 +19,8 @@ import {
 import apiDash from "@/services/apiDash";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface DeploymentProps {
   success: boolean;
@@ -56,27 +58,26 @@ interface PrometheusQueryResult {
     }>;
   };
 }
-
 const metrics = (namespace: string, podname: string) => {
   return {
-    //  CPU usage (ядра)
-    cpuUsage: `sum(rate(container_cpu_usage_seconds_total{namespace="${namespace}", pod="${podname}"}[5m])) by (container)`,
+    // CPU usage (more precise with pod_name label)
+    cpuUsage: `sum(rate(container_cpu_usage_seconds_total{namespace="${namespace}", pod=~"${podname}", container!="POD", container!=""}[5m])) by (container)`,
 
-    //  Memory usage (байты)
-    memoryUsage: `sum(container_memory_working_set_bytes{namespace="${namespace}", pod="${podname}"}) by (container)`,
+    // Memory usage (exclude system containers)
+    memoryUsage: `sum(container_memory_working_set_bytes{namespace="${namespace}", pod=~"${podname}", container!="POD", container!=""}) by (container)`,
 
-    //  CPU limits
-    cpuLimits: `kube_pod_container_resource_limits{namespace="${namespace}", pod="${podname}", resource="cpu"}`,
+    // CPU limits (using pod_name label pattern)
+    cpuLimits: `kube_pod_container_resource_limits{namespace="${namespace}", pod=~"${podname}", resource="cpu", container!="POD", container!=""}`,
 
-    //  Memory limits
-    MemoryLimits: `kube_pod_container_resource_limits{namespace="${namespace}", pod="${podname}", resource="memory"}`,
+    // Memory limits
+    memoryLimits: `kube_pod_container_resource_limits{namespace="${namespace}", pod=~"${podname}", resource="memory", container!="POD", container!=""}`,
 
-    //  CPU requests
-    cpuRequests: `kube_pod_container_resource_requests{namespace="${namespace}", pod="${podname}", resource="cpu"}`,
+    // CPU requests
+    cpuRequests: `kube_pod_container_resource_requests{namespace="${namespace}", pod=~"${podname}", resource="cpu", container!="POD", container!=""}`,
 
-    //  Memory requests
-    MemoryRequests: `kube_pod_container_resource_requests{namespace="${namespace}", pod="${podname}", resource="memory"}`,
-  }
+    // Memory requests
+    memoryRequests: `kube_pod_container_resource_requests{namespace="${namespace}", pod=~"${podname}", resource="memory", container!="POD", container!=""}`,
+  };
 }
 
 interface DeploymentMetrics {
@@ -123,9 +124,9 @@ async function fetchDeploymentMetrics(
     executeQuery(query.cpuUsage, clasterIp),
     executeQuery(query.memoryUsage, clasterIp),
     executeQuery(query.cpuLimits, clasterIp),
-    executeQuery(query.MemoryLimits, clasterIp),
+    executeQuery(query.memoryLimits, clasterIp),
     executeQuery(query.cpuRequests, clasterIp),
-    executeQuery(query.MemoryRequests, clasterIp),
+    executeQuery(query.memoryRequests, clasterIp),
   ]);
 
   return {
@@ -138,16 +139,17 @@ async function fetchDeploymentMetrics(
   };
 }
 
-function ModalDeploymentMetrics({
-  namespace,
-  podmane,
-  clusterId,
-}: {
-  namespace: string;
-  podmane: string;
-  clusterId: string;
-}) {
-  const [metrics, setMetrics] = useState<DeploymentMetrics>();
+async function deployCluster(clusterIdString: string, namespace :string, name:string, replicas:number) {
+  await apiDash.post(`/k8s/cluster/${clusterIdString}/scale-deployment`,
+    {namespace, name, replicas}
+  )
+}
+
+
+
+function ModalDeploymentMetrics({ namespace, podmane, clusterId, replicas} : {namespace: string, podmane: string, clusterId: string, replicas: number}){
+  const [metrics, setMetrics] = useState<DeploymentMetrics>()
+  const [input, setInput] = useState('')
   useEffect(() => {
     async function wrap() {
       const servermetrics = await fetchDeploymentMetrics(
@@ -157,10 +159,21 @@ function ModalDeploymentMetrics({
       );
       setMetrics(servermetrics);
     }
-    wrap();
-  }, []);
-  console.log(metrics);
-  return <div>{JSON.stringify(metrics)}</div>;
+    wrap()
+  }, [])
+  console.log(metrics)
+  function handleInput(inputValue: string){
+    const value = Number(inputValue)
+    setInput(inputValue)
+    if (value < 0) setInput(inputValue)
+    if (value > 4) setInput(inputValue)
+  }
+  return (
+    <div className="flex flex-col gap-5">
+      <Input value={input} type="number" onChange={(e) => handleInput(e.target.value)}/>
+      <Button onClick={() => deployCluster(clusterId, namespace, podmane, replicas)}>Изменить кол-во подов</Button>
+    </div>
+  )
 }
 
 export default function Deployment() {
@@ -217,19 +230,7 @@ export default function Deployment() {
                   <Dialog>
                     <DialogTrigger>{deployment.name}</DialogTrigger>
                     <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Are you absolutely sure?</DialogTitle>
-                        <DialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your account and remove your data from our
-                          servers.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <ModalDeploymentMetrics
-                        namespace={elem.namespace}
-                        podmane={deployment.name}
-                        clusterId={params.cluster}
-                      />
+                      <ModalDeploymentMetrics namespace={elem.namespace} podmane={deployment.name} clusterId={params.cluster} replicas={deployment.replicas}/>
                     </DialogContent>
                   </Dialog>
                 </TableCell>
