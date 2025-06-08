@@ -55,22 +55,22 @@ interface PrometheusQueryResult {
 const metrics = (namespace: string, podname: string) =>  {
   return {
     //  CPU usage (ядра)
-    cpuUsage: `sum(rate(container_cpu_usage_seconds_total{namespace=${namespace}, pod=${podname}}[5m])) by (container)`,
+    cpuUsage: `sum(rate(container_cpu_usage_seconds_total{namespace="${namespace}", pod="${podname}"}[5m])) by (container)`,
 
     //  Memory usage (байты)
-    memoryUsage: `sum(container_memory_working_set_bytes{namespace=${namespace}, pod=${podname}}) by (container)`,
+    memoryUsage: `sum(container_memory_working_set_bytes{namespace="${namespace}", pod="${podname}"}) by (container)`,
 
     //  CPU limits
-    cpuLimits: `kube_pod_container_resource_limits{namespace=${namespace}, pod=${podname}, resource=cpu}`,
+    cpuLimits: `kube_pod_container_resource_limits{namespace="${namespace}", pod="${podname}", resource="cpu"}`,
 
     //  Memory limits
-    MemoryLimits: `kube_pod_container_resource_limits{namespace=${namespace}, pod=${podname}, resource=memory}`,
+    MemoryLimits: `kube_pod_container_resource_limits{namespace="${namespace}", pod="${podname}", resource="memory"}`,
 
     //  CPU requests
-    cpuRequests: `kube_pod_container_resource_requests{namespace=${namespace}, pod=${podname}, resource=cpu}`,
+    cpuRequests: `kube_pod_container_resource_requests{namespace="${namespace}", pod="${podname}", resource="cpu"}`,
 
     //  Memory requests
-    MemoryRequests: `kube_pod_container_resource_requests{namespace=${namespace}, pod=${podname}, resource=memory}`,
+    MemoryRequests: `kube_pod_container_resource_requests{namespace="${namespace}", pod="${podname}", resource="memory"}`,
   }
 }
 
@@ -85,7 +85,7 @@ interface DeploymentMetrics {
 }
 
 async function executeQuery(query: string, clasterId: string): Promise<number> {
-    const URL = `/k8s/cluster/${clasterId}/metrics?query="${query}"`
+    const URL = `/k8s/cluster/${clasterId}/metrics?query=${query}`
     console.log(URL)
     const response = await apiDash.get<PrometheusQueryResult>(URL);
 

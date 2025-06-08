@@ -52,16 +52,16 @@ const queries = {
   cpuTotal: 'sum(machine_cpu_cores)',
   memoryUsed: 'sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)',
   memoryTotal: 'sum(node_memory_MemTotal_bytes)',
-  podsFailed: 'sum(kube_pod_status_phase{phase=Failed})',
-  podsSucceeded: 'sum(kube_pod_status_phase{phase=Succeeded})',
-  podsRunning: 'sum(kube_pod_status_phase{phase=Running})',
-  podsPending: 'sum(kube_pod_status_phase{phase=Pending})',
+  podsFailed: 'sum(kube_pod_status_phase{phase="Failed"})',
+  podsSucceeded: 'sum(kube_pod_status_phase{phase="Succeeded"})',
+  podsRunning: 'sum(kube_pod_status_phase{phase="Running"})',
+  podsPending: 'sum(kube_pod_status_phase{phase="Pending"})',
 };
 
 // Function to execute a single query
 async function executeQuery(query: string, clasterIp: string): Promise<number> {
 
-  const URL = `/k8s/cluster/${clasterIp}/metrics?query="${query}"`
+  const URL = `/k8s/cluster/${clasterIp}/metrics?query=${query}`
     const response = await apiDash.get<PrometheusQueryResult>(URL)
 
     if (response.data.status === 'success' && response.data.data.result.length > 0) {
