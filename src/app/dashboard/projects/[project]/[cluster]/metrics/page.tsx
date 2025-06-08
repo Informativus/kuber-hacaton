@@ -1,9 +1,11 @@
-import React from 'react'
+'use client'
+import React, { useCallback, useEffect, useState } from 'react'
 import axios from 'axios';
 import apiDash from '@/services/apiDash';
 import type { Metadata } from 'next';
 import StatCards from '@/components/ui/StatsCard';
 import { PodStatusDonut } from '@/components/ui/PodChart';
+import { useParams } from 'next/navigation';
 
 // Define the query types
 interface PrometheusQueryResult {
@@ -346,17 +348,34 @@ async function getClusterId (clusterIdString: string) {
   }
 }
 
-export default async function Metrics({
-  params,
-}: {
-  params: Promise<ClusterParams>;
-}) {
-  async function UpdateValues() {
-    const clasterIp = await getClusterId((await params).cluster)
-    const metrics = await fetchClusterMetrics(clasterIp)
-    return metrics
-  }
-  const metrics = await UpdateValues()
+export default function Metrics() {
+  const params = useParams<{project: string, cluster: string}>()
+  const [clusterId, setClusterId] = useState('')
+  const [metrics, setMetrics] = useState<ClusterMetrics>()
+
+    const fetchData = useCallback(async () => {
+    try {
+      const serverClusterId = await getClusterId(params.cluster)
+      setClusterId(serverClusterId)
+      const serverMetrics = await fetchClusterMetrics(serverClusterId)
+      setMetrics(serverMetrics)
+    } catch (err) {
+      console.error("Failed to fetch metrics:", err)
+    }
+  }, [params.cluster])
+
+  useEffect(() => {
+    // Initial fetch
+    fetchData()
+
+    // Set up interval for refetching
+    const intervalId = setInterval(fetchData, 6000) // 60 seconds
+
+    // Cleanup
+    return () => clearInterval(intervalId)
+  }, [fetchData])
+
+
   const overviewCards = metrics ? getOverviewCards(metrics): null;
   const podDonut = metrics ? getPodStatusDonutData(metrics): null;
   const [running, pending, succeeded, failed] = podDonut ? podDonut.datasets[0].data : [0,0,0,0]
@@ -372,16 +391,4 @@ export default async function Metrics({
       {podDonut && <PodStatusDonut data={podData} />}
     </div>
   )
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<ClusterParams>;
-}): Promise<Metadata> {
-  const {cluster} = await params
-  return {
-    title: `Metrics for Cluster ${cluster}`,
-    description: `Performance metrics for cluster ${cluster} in project ${cluster}`,
-  };
 }
