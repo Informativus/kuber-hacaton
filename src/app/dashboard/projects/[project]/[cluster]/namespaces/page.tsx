@@ -83,7 +83,7 @@ export default function Namespaces() {
       {/* Create button and dialog */}
       <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
         <Dialog.Trigger asChild>
-          <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button className="inline-flex items-center px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors">
             <Plus className="mr-2 h-4 w-4" />
             Создать Namespace
           </button>
@@ -145,7 +145,7 @@ export default function Namespaces() {
       </Dialog.Root>
 
       {/* Table */}
-      <table className="min-w-full bg-white rounded shadow">
+      <table className="min-w-full bg-white rounded shadow rounded">
         <thead>
           <tr className="bg-gray-100">
             <th className="px-4 py-2 text-left">Name</th>

@@ -41,7 +41,7 @@ export async function loginApi(
     user: {
       id: result.data.id,
       name: result.data.name,
-      roles: [{ id: "r-2", name: "user" }],
+      roles: result.data.roles,
       createdAt: result.data.createdAt,
     },
   };
@@ -62,7 +62,7 @@ export async function registerApi(
     user: {
       id: result.data.id,
       name: result.data.name,
-      roles: [{ id: "r-2", name: "user" }],
+      roles: result.data.roles,
       createdAt: result.data.createdAt,
     },
   };

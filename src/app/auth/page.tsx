@@ -129,20 +129,6 @@ export default function Auth() {
           </div>
         )}
 
-        {/* Код кластера */}
-        {!isLogin && (
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="cluster">Код кластера (опционально)</Label>
-            <Input
-              id="cluster"
-              type="text"
-              value={clusterCode}
-              onChange={(e) => setCluster(e.target.value)}
-              placeholder="код кластера"
-            />
-          </div>
-        )}
-
         <Button
           type="submit"
           className="w-full py-3 text-lg font-medium"
