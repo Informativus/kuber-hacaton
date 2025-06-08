@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import StatCards from '@/components/ui/StatsCard';
 import { PodStatusDonut } from '@/components/ui/PodChart';
 import { useParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 // Define the query types
 interface PrometheusQueryResult {
@@ -62,7 +63,6 @@ async function executeQuery(query: string, clasterIp: string): Promise<number> {
 
   const PROMETHEUS_URL = `http://${clasterIp}:30090/api/v1/query`
   console.log(PROMETHEUS_URL)
-  try {
     const response = await axios.get<PrometheusQueryResult>(PROMETHEUS_URL, {
       params: { query },
     });
@@ -72,10 +72,6 @@ async function executeQuery(query: string, clasterIp: string): Promise<number> {
       return parseFloat(response.data.data.result[0].value[1]);
     }
     return 0;
-  } catch (error) {
-    console.error(`Error executing query "${query}":`, error);
-    return 0;
-  }
 }
 
 // Main function to fetch all metrics
@@ -352,15 +348,28 @@ export default function Metrics() {
   const params = useParams<{project: string, cluster: string}>()
   const [clusterId, setClusterId] = useState('')
   const [metrics, setMetrics] = useState<ClusterMetrics>()
+  const [error, setError] = useState(false)
+  const [shouldRefetch, setShouldRefetch] = useState(false)
 
-    const fetchData = useCallback(async () => {
+const fixMetrics = useCallback(async (clusterIdString: string) => {
+      const clusterId = Number(clusterIdString)
+      const data = await apiDash.post('/k8s/cluster/metric/install', { clusterId })
+      console.log(data)
+      setShouldRefetch(true) // Trigger refetch after fixing
+  }, [])
+
+  const fetchData = useCallback(async () => {
+    setError(false)
     try {
       const serverClusterId = await getClusterId(params.cluster)
       setClusterId(serverClusterId)
       const serverMetrics = await fetchClusterMetrics(serverClusterId)
       setMetrics(serverMetrics)
     } catch (err) {
+      setError(true)
       console.error("Failed to fetch metrics:", err)
+    } finally {
+      setShouldRefetch(false)
     }
   }, [params.cluster])
 
@@ -369,11 +378,11 @@ export default function Metrics() {
     fetchData()
 
     // Set up interval for refetching
-    const intervalId = setInterval(fetchData, 6000) // 60 seconds
+    const intervalId = setInterval(fetchData, 60000) // 60 seconds
 
     // Cleanup
     return () => clearInterval(intervalId)
-  }, [fetchData])
+  }, [shouldRefetch])
 
 
   const overviewCards = metrics ? getOverviewCards(metrics): null;
@@ -387,6 +396,8 @@ export default function Metrics() {
   }
   return (
     <div className='flex flex-col gap-4'>
+      {error && <Button onClick={() => {fixMetrics(params.cluster)}}>Починить метрики</Button>}
+      <Button onClick={() => {setShouldRefetch(true)}}>Обновить значения</Button>
       {overviewCards && <StatCards data={overviewCards} />}
       {podDonut && <PodStatusDonut data={podData} />}
     </div>
