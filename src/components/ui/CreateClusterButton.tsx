@@ -34,8 +34,11 @@ export default function CreateClusterDialog() {
           user: username,
           password,
         });
-        setOpen(false);
-        router.refresh();
+
+        setTimeout(() => {
+          setOpen(false);
+          router.refresh();
+        }, 60000);
       } catch (err: any) {
         if (err.response?.data?.error) {
           setErrorMessage(err.response.data);
