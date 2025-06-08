@@ -19,7 +19,6 @@ export default function ClusterNavbar() {
         <NavLink href={`${pathname}/deployment`} className="w-fit">
           Деплоймент
         </NavLink>
-        <NavLink href={`${pathname}/settings`}>Настройки</NavLink>
         <NavLink href={`${pathname}/namespaces`}>Namespaces</NavLink>
       </nav>
     </aside>
