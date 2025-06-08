@@ -1,12 +1,12 @@
-'use client'
-import React, { useCallback, useEffect, useState } from 'react'
-import axios from 'axios';
-import apiDash from '@/services/apiDash';
-import type { Metadata } from 'next';
-import StatCards from '@/components/ui/StatsCard';
-import { PodStatusDonut } from '@/components/ui/PodChart';
-import { useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+"use client";
+import React, { useCallback, useEffect, useState } from "react";
+import axios from "axios";
+import apiDash from "@/services/apiDash";
+import type { Metadata } from "next";
+import StatCards from "@/components/ui/StatsCard";
+import { PodStatusDonut } from "@/components/ui/PodChart";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 // Define the query types
 interface PrometheusQueryResult {
@@ -45,35 +45,33 @@ interface ClusterMetrics {
   podsPending: number;
 }
 
-// Queries as provided
 const queries = {
-  nodesCount: 'count(kube_node_info)',
-  cpuUsage: 'sum(rate(node_cpu_seconds_total{mode!=idle}[5m]))',
-  cpuTotal: 'sum(machine_cpu_cores)',
-  memoryUsed: 'sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)',
-  memoryTotal: 'sum(node_memory_MemTotal_bytes)',
+  nodesCount: "count(kube_node_info)",
+  cpuUsage: "sum(rate(node_cpu_seconds_total{mode!=idle}[5m]))",
+  cpuTotal: "sum(machine_cpu_cores)",
+  memoryUsed:
+    "sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)",
+  memoryTotal: "sum(node_memory_MemTotal_bytes)",
   podsFailed: 'sum(kube_pod_status_phase{phase="Failed"})',
   podsSucceeded: 'sum(kube_pod_status_phase{phase="Succeeded"})',
   podsRunning: 'sum(kube_pod_status_phase{phase="Running"})',
   podsPending: 'sum(kube_pod_status_phase{phase="Pending"})',
 };
 
-// Function to execute a single query
 async function executeQuery(query: string, clasterIp: string): Promise<number> {
+  const URL = `/k8s/cluster/${clasterIp}/metrics?query=${query}`;
+  const response = await apiDash.get<PrometheusQueryResult>(URL);
 
-  const URL = `/k8s/cluster/${clasterIp}/metrics?query=${query}`
-    const response = await apiDash.get<PrometheusQueryResult>(URL)
-
-    if (response.data.status === 'success' && response.data.data.result.length > 0) {
-      // Extract the numeric value from the result
-      return parseFloat(response.data.data.result[0].value[1]);
-    }
-    return 0;
+  if (
+    response.data.status === "success" &&
+    response.data.data.result.length > 0
+  ) {
+    return parseFloat(response.data.data.result[0].value[1]);
+  }
+  return 0;
 }
 
-// Main function to fetch all metrics
 async function fetchClusterMetrics(clasterIp: string): Promise<ClusterMetrics> {
-  // Execute all queries in parallel
   const [
     nodesCount,
     cpuUsage,
@@ -118,7 +116,9 @@ interface OverviewCardData {
 }
 
 function getOverviewCards(metrics: ClusterMetrics): OverviewCardData[] {
-  const memoryUsagePercent = Number(((metrics.memoryUsed / metrics.memoryTotal) * 100).toFixed(2));
+  const memoryUsagePercent = Number(
+    ((metrics.memoryUsed / metrics.memoryTotal) * 100).toFixed(2),
+  );
   return [
     {
       title: "Nodes",
@@ -141,7 +141,7 @@ function getOverviewCards(metrics: ClusterMetrics): OverviewCardData[] {
     },
     {
       title: "Successfull Pods",
-      value:  metrics.podsSucceeded,
+      value: metrics.podsSucceeded,
       icon: "container",
     },
   ];
@@ -156,7 +156,7 @@ interface GaugeData {
 
 function getCpuGaugeData(metrics: ClusterMetrics): GaugeData {
   return {
-    value: metrics.cpuUsage * 100, // Assuming cpuUsage is 0-1
+    value: metrics.cpuUsage * 100,
     max: 100,
     label: "CPU Usage",
     units: "%",
@@ -165,8 +165,8 @@ function getCpuGaugeData(metrics: ClusterMetrics): GaugeData {
 
 function getMemoryGaugeData(metrics: ClusterMetrics): GaugeData {
   return {
-    value: metrics.memoryUsed / 1024 / 1024, // Convert to MB
-    max: metrics.memoryTotal / 1024 / 1024, // Convert to MB
+    value: metrics.memoryUsed / 1024 / 1024,
+    max: metrics.memoryTotal / 1024 / 1024,
     label: "Memory Usage",
     units: "MB",
   };
@@ -191,12 +191,7 @@ function getPodStatusDonutData(metrics: ClusterMetrics): DonutChartData {
           metrics.podsSucceeded,
           metrics.podsFailed,
         ],
-        backgroundColor: [
-          "#4BC0C0", // Running - Teal
-          "#FFCE56", // Pending - Yellow
-          "#36A2EB", // Succeeded - Blue
-          "#FF6384", // Failed - Red
-        ],
+        backgroundColor: ["#4BC0C0", "#FFCE56", "#36A2EB", "#FF6384"],
       },
     ],
   };
@@ -213,7 +208,6 @@ interface TimeSeriesData {
   }[];
 }
 
-// Assuming you have historical data in this format
 interface HistoricalMetrics {
   timestamp: string;
   metrics: ClusterMetrics;
@@ -234,7 +228,9 @@ function getCpuUsageTimeSeries(history: HistoricalMetrics[]): TimeSeriesData {
   };
 }
 
-function getMemoryUsageTimeSeries(history: HistoricalMetrics[]): TimeSeriesData {
+function getMemoryUsageTimeSeries(
+  history: HistoricalMetrics[],
+): TimeSeriesData {
   return {
     labels: history.map((h) => new Date(h.timestamp).toLocaleTimeString()),
     datasets: [
@@ -317,86 +313,101 @@ interface OverviewCardData {
   unit?: string;
   icon?: string;
   percentage?: number;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: "up" | "down" | "neutral";
 }
-
 
 interface ClusterParams {
   project: string;
   cluster: string;
 }
 
-async function getClusterId (clusterIdString: string) {
-
-  const clusterId = Number(clusterIdString)
-  console.log(clusterId)
+async function getClusterId(clusterIdString: string) {
+  const clusterId = Number(clusterIdString);
+  console.log(clusterId);
   try {
     const result = await apiDash.post<Cluster>("k8s/cluster/getclusterbyid", {
       clusterId,
     });
-    console.log(result.data)
+    console.log(result.data);
     return result.data.ip;
   } catch (e) {
-    return '1'
+    return "1";
   }
 }
 
 export default function Metrics() {
-  const params = useParams<{project: string, cluster: string}>()
-  const [clusterId, setClusterId] = useState('')
-  const [metrics, setMetrics] = useState<ClusterMetrics>()
-  const [error, setError] = useState(false)
-  const [shouldRefetch, setShouldRefetch] = useState(false)
+  const params = useParams<{ project: string; cluster: string }>();
+  const [clusterId, setClusterId] = useState("");
+  const [metrics, setMetrics] = useState<ClusterMetrics>();
+  const [error, setError] = useState(false);
+  const [shouldRefetch, setShouldRefetch] = useState(false);
 
-const fixMetrics = useCallback(async (clusterIdString: string) => {
-      const clusterId = Number(clusterIdString)
-      const data = await apiDash.post('/k8s/cluster/metric/install', { clusterId })
-      console.log(data)
-      setShouldRefetch(true) // Trigger refetch after fixing
-  }, [])
+  const fixMetrics = useCallback(async (clusterIdString: string) => {
+    const clusterId = Number(clusterIdString);
+    const data = await apiDash.post("/k8s/cluster/metric/install", {
+      clusterId,
+    });
+    console.log(data);
+    setShouldRefetch(true); // Trigger refetch after fixing
+  }, []);
 
   const fetchData = useCallback(async () => {
-    setError(false)
+    setError(false);
     try {
-      const serverClusterId = await getClusterId(params.cluster)
-      setClusterId(serverClusterId)
-      const serverMetrics = await fetchClusterMetrics(params.cluster)
-      setMetrics(serverMetrics)
+      const serverClusterId = await getClusterId(params.cluster);
+      setClusterId(serverClusterId);
+      const serverMetrics = await fetchClusterMetrics(params.cluster);
+      setMetrics(serverMetrics);
     } catch (err) {
-      setError(true)
-      console.error("Failed to fetch metrics:", err)
+      setError(true);
+      console.error("Failed to fetch metrics:", err);
     } finally {
-      setShouldRefetch(false)
+      setShouldRefetch(false);
     }
-  }, [params.cluster])
+  }, [params.cluster]);
 
   useEffect(() => {
     // Initial fetch
-    fetchData()
+    fetchData();
 
     // Set up interval for refetching
-    const intervalId = setInterval(fetchData, 60000) // 60 seconds
+    const intervalId = setInterval(fetchData, 60000); // 60 seconds
 
     // Cleanup
-    return () => clearInterval(intervalId)
-  }, [shouldRefetch])
+    return () => clearInterval(intervalId);
+  }, [shouldRefetch]);
 
-
-  const overviewCards = metrics ? getOverviewCards(metrics): null;
-  const podDonut = metrics ? getPodStatusDonutData(metrics): null;
-  const [running, pending, succeeded, failed] = podDonut ? podDonut.datasets[0].data : [0,0,0,0]
+  const overviewCards = metrics ? getOverviewCards(metrics) : null;
+  const podDonut = metrics ? getPodStatusDonutData(metrics) : null;
+  const [running, pending, succeeded, failed] = podDonut
+    ? podDonut.datasets[0].data
+    : [0, 0, 0, 0];
   const podData = {
     running: running,
     pending: pending,
     succeeded: succeeded,
     failed: failed,
-  }
+  };
   return (
-    <div className='flex flex-col gap-4'>
-      {error && <Button onClick={() => {fixMetrics(params.cluster)}}>Починить метрики</Button>}
-      <Button onClick={() => {setShouldRefetch(true)}}>Обновить значения</Button>
+    <div className="flex flex-col gap-4">
+      {error && (
+        <Button
+          onClick={() => {
+            fixMetrics(params.cluster);
+          }}
+        >
+          Починить метрики
+        </Button>
+      )}
+      <Button
+        onClick={() => {
+          setShouldRefetch(true);
+        }}
+      >
+        Обновить значения
+      </Button>
       {overviewCards && <StatCards data={overviewCards} />}
       {podDonut && <PodStatusDonut data={podData} />}
     </div>
-  )
+  );
 }

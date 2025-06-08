@@ -1,4 +1,5 @@
-'use client'
+"use client";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,31 +15,35 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import apiDash from "@/services/apiDash";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 
 interface DeploymentProps {
-  success: boolean,
-  data: DeploymentData[]
+  success: boolean;
+  data: DeploymentData[];
 }
 
 interface DeploymentData {
-    namespace: string,
-    deployments: Deployments[]
+  namespace: string;
+  deployments: Deployments[];
 }
 
 interface Deployments {
-  name: string,
-  replicas: number,
-  availableReplicas: number
+  name: string;
+  replicas: number;
+  availableReplicas: number;
 }
 
-async function getDeployments (clusterId: string) {
-  const result = await apiDash.get<DeploymentProps>(`k8s/cluster/${clusterId}/namespaces-with-deployments`)
-  const deployments = result.data.data.filter(elem => elem.deployments.length > 0).sort((a,b) => a.deployments.length - b.deployments.length)
-  return deployments
+async function getDeployments(clusterId: string) {
+  const result = await apiDash.get<DeploymentProps>(
+    `k8s/cluster/${clusterId}/namespaces-with-deployments`,
+  );
+  const deployments = result.data.data
+    .filter((elem) => elem.deployments.length > 0)
+    .sort((a, b) => a.deployments.length - b.deployments.length);
+  return deployments;
 }
 
 interface PrometheusQueryResult {
@@ -52,7 +57,7 @@ interface PrometheusQueryResult {
   };
 }
 
-const metrics = (namespace: string, podname: string) =>  {
+const metrics = (namespace: string, podname: string) => {
   return {
     //  CPU usage (ядра)
     cpuUsage: `sum(rate(container_cpu_usage_seconds_total{namespace="${namespace}", pod="${podname}"}[5m])) by (container)`,
@@ -75,13 +80,12 @@ const metrics = (namespace: string, podname: string) =>  {
 }
 
 interface DeploymentMetrics {
-  cpuUsage: number
-  memoryUsage: number
-  cpuLimits: number
-  MemoryLimits: number
-  cpuRequests: number
-  MemoryRequests: number
-
+  cpuUsage: number;
+  memoryUsage: number;
+  cpuLimits: number;
+  MemoryLimits: number;
+  cpuRequests: number;
+  MemoryRequests: number;
 }
 
 async function executeQuery(query: string, clasterId: string): Promise<number> {
@@ -89,17 +93,24 @@ async function executeQuery(query: string, clasterId: string): Promise<number> {
     console.log(URL)
     const response = await apiDash.get<PrometheusQueryResult>(URL);
 
-    console.log(response, response)
+  console.log(response, response);
 
-    if (response.data.status === 'success' && response.data.data.result.length > 0) {
-      // Extract the numeric value from the result
-      return parseFloat(response.data.data.result[0].value[1]);
-    }
-    return 0;
+  if (
+    response.data.status === "success" &&
+    response.data.data.result.length > 0
+  ) {
+    // Extract the numeric value from the result
+    return parseFloat(response.data.data.result[0].value[1]);
+  }
+  return 0;
 }
 
-async function fetchDeploymentMetrics(namespace: string, podname: string, clasterIp: string): Promise<DeploymentMetrics> {
-  const query = metrics(namespace, podname)
+async function fetchDeploymentMetrics(
+  namespace: string,
+  podname: string,
+  clasterIp: string,
+): Promise<DeploymentMetrics> {
+  const query = metrics(namespace, podname);
   // Execute all queries in parallel
   const [
     cpuUsage,
@@ -127,44 +138,69 @@ async function fetchDeploymentMetrics(namespace: string, podname: string, claste
   };
 }
 
-
-
-function ModalDeploymentMetrics({ namespace, podmane, clusterId } : {namespace: string, podmane: string, clusterId: string}){
-  const [metrics, setMetrics] = useState<DeploymentMetrics>()
+function ModalDeploymentMetrics({
+  namespace,
+  podmane,
+  clusterId,
+}: {
+  namespace: string;
+  podmane: string;
+  clusterId: string;
+}) {
+  const [metrics, setMetrics] = useState<DeploymentMetrics>();
   useEffect(() => {
     async function wrap() {
-      const servermetrics = await fetchDeploymentMetrics(namespace, podmane, clusterId)
-      setMetrics(servermetrics)
+      const servermetrics = await fetchDeploymentMetrics(
+        namespace,
+        podmane,
+        clusterId,
+      );
+      setMetrics(servermetrics);
     }
-    wrap()
-  }, [])
-  console.log(metrics)
-  return (
-    <div>{JSON.stringify(metrics)}</div>
-  )
+    wrap();
+  }, []);
+  console.log(metrics);
+  return <div>{JSON.stringify(metrics)}</div>;
 }
 
 export default function Deployment() {
-
-  const params = useParams<{projects: string, cluster: string}>()
-
-  const [deployments, setDeployments] = useState<DeploymentData[]>([])
+  const params = useParams<{ projects: string; cluster: string }>();
+  const [deployments, setDeployments] = useState<DeploymentData[]>([]);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deploySuccess, setDeploySuccess] = useState<boolean | null>(null);
 
   useEffect(() => {
-
     async function wrap() {
-      const serverDeployments = await getDeployments(params.cluster)
-      setDeployments(serverDeployments)
+      const serverDeployments = await getDeployments(params.cluster);
+      setDeployments(serverDeployments);
     }
 
-    wrap()
-  }, [params.cluster])
+    wrap();
+  }, [params.cluster]);
 
-  console.log(deployments)
+  console.log(deployments);
+  const handleTestDeploy = async () => {
+    setIsDeploying(true);
+    setDeploySuccess(null);
+    try {
+      await apiDash.post("/k8s/cluster/deploy", {
+        clusterId: Number(params.cluster),
+      });
+      setDeploySuccess(true);
+    } catch (e) {
+      console.error("Deploy error", e);
+      setDeploySuccess(false);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
 
   return (
     <div>
       <h2>Деплойменты</h2>
+      <Button onClick={handleTestDeploy} disabled={isDeploying}>
+        {isDeploying ? "Деплой..." : "Тестовый деплой"}
+      </Button>
       <Table>
         <TableHeader>
           <TableRow>
@@ -173,7 +209,7 @@ export default function Deployment() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {deployments.map(elem => (
+          {deployments.map((elem) =>
             elem.deployments.map((deployment, i) => (
               <TableRow key={i}>
                 <TableCell>{elem.namespace}</TableCell>
@@ -184,19 +220,24 @@ export default function Deployment() {
                       <DialogHeader>
                         <DialogTitle>Are you absolutely sure?</DialogTitle>
                         <DialogDescription>
-                          This action cannot be undone. This will permanently delete your account
-                          and remove your data from our servers.
+                          This action cannot be undone. This will permanently
+                          delete your account and remove your data from our
+                          servers.
                         </DialogDescription>
                       </DialogHeader>
-                      <ModalDeploymentMetrics namespace={elem.namespace} podmane={deployment.name} clusterId={params.cluster}/>
+                      <ModalDeploymentMetrics
+                        namespace={elem.namespace}
+                        podmane={deployment.name}
+                        clusterId={params.cluster}
+                      />
                     </DialogContent>
                   </Dialog>
-                  </TableCell>
+                </TableCell>
               </TableRow>
-            ))
-          ))}
+            )),
+          )}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
